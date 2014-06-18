@@ -1,12 +1,10 @@
--- DFS walker for Tree model in REDIS
--- Model: 
---  Node: {
---          "children" : "<children_list_or_set_key_name>"
---          "data" : "<data_list_or_set_key_name>"
---        }
---  children_list_or_set_key_name: SET
---  data_list_or_set_key_name: SET
+-- General assumptions
+local TREE_CHILDREN_FIELD = "children"
+local TREE_DATA_FIELD = "data"
+local TREE_PARENT_FIELD = "parent"
+local TREE_META_FILE = "meta"
 
+-- DFS walker for Tree model in REDIS
 local START = 0
 local ENDI = 0
 local EXIT_NOW = false
@@ -16,7 +14,7 @@ local REDIS_SET_CARD_CMD = "SCARD"
 local REDIS_HGET_CMD = "HGET"
 
 local function get_children(node_key)
-  local child_key = redis.call(REDIS_HGET_CMD, node_key, 'children')
+  local child_key = redis.call(REDIS_HGET_CMD, node_key, TREE_CHILDREN_FIELD)
   if child_key 
     then
       return redis.call(REDIS_SET_MEMBERS_CMD, child_key)
@@ -24,7 +22,7 @@ local function get_children(node_key)
 end
 
 local function get_data(node_key)
-  local data_key = redis.call(REDIS_HGET_CMD, node_key, 'data')
+  local data_key = redis.call(REDIS_HGET_CMD, node_key, TREE_DATA_FIELD)
   if data_key
     then
       return redis.call(REDIS_SET_MEMBERS_CMD, data_key)
@@ -32,7 +30,7 @@ local function get_data(node_key)
 end
 
 local function get_data_size(node_key)
-  local data_key = redis.call(REDIS_HGET_CMD, node_key, 'data')
+  local data_key = redis.call(REDIS_HGET_CMD, node_key, TREE_DATA_FIELD)
   if data_key
     then
       return redis.call(REDIS_SET_CARD_CMD, data_key)
@@ -84,11 +82,35 @@ local function dfs_page(nodes, key)
     end
 end
 
+local function dfs(nodes, key)
+  local data = get_data(key)
+  if data 
+    then
+      for _,val in pairs(data) do
+        table.insert(nodes, val)
+        end
+     end
+
+  local children = get_children(key)
+  if children
+    then
+      for _, val in pairs(children) do
+          dfs(nodes, val)
+        end
+    end
+end
+
+
 local function main(root_node, start, endi)
   local nodes = {}
   START = tonumber(start)
   ENDI = tonumber(endi)
-  dfs_page(nodes, root_node)
+  if START ~= nil and ENDI ~= nil and START >= 0 and ENDI >= 0  
+    then
+      dfs_page(nodes, root_node)
+  else
+      dfs(nodes, root_node)
+    end
   return nodes
 end
 
