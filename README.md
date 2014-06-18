@@ -4,8 +4,8 @@ redis-tree
 Tree model in REDIS
 ===================
 
-<pre>
 Represneting of Node: 
+<pre>
   Node -\
         |-- data -> Data object's Key in REDIS  
         |
