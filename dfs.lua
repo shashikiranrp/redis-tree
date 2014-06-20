@@ -13,6 +13,7 @@ local REDIS_SET_MEMBERS_CMD = "SMEMBERS"
 local REDIS_SET_CARD_CMD = "SCARD"
 local REDIS_HGET_CMD = "HGET"
 
+-- funciton to get children by indirection
 local function get_children(node_key)
   local child_key = redis.call(REDIS_HGET_CMD, node_key, TREE_CHILDREN_FIELD)
   if child_key 
@@ -21,6 +22,7 @@ local function get_children(node_key)
     end
 end
 
+-- function to get data
 local function get_data(node_key)
   local data_key = redis.call(REDIS_HGET_CMD, node_key, TREE_DATA_FIELD)
   if data_key
@@ -29,6 +31,7 @@ local function get_data(node_key)
     end
 end
 
+-- data size of a given node
 local function get_data_size(node_key)
   local data_key = redis.call(REDIS_HGET_CMD, node_key, TREE_DATA_FIELD)
   if data_key
@@ -37,6 +40,7 @@ local function get_data_size(node_key)
     end
 end
 
+-- paginating DFS
 local function dfs_page(nodes, key) 
   local data_size = get_data_size(key)
   if START > data_size
@@ -82,6 +86,7 @@ local function dfs_page(nodes, key)
     end
 end
 
+-- DFS
 local function dfs(nodes, key)
   local data = get_data(key)
   if data 
